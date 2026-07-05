@@ -1,5 +1,10 @@
-import Home from './screens/home';
+import AppNavigator from "./navigation/AppNavigator";
+import { TripProvider } from "./context/TripContext";
 
 export default function App() {
-  return <Home />;
+  return (
+    <TripProvider>
+      <AppNavigator />
+    </TripProvider>
+  );
 }

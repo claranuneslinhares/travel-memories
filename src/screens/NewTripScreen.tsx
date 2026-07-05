@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import type { Viagem } from '../types/Viagem';
+import { TripContext } from '../context/TripContext';
 
-type Props = {
-  onSalvar: (viagem: Viagem) => void;
-  onVoltar: () => void;
-};
+export default function NewTripScreen({ navigation }: any) {
+  const { addTrip } = useContext(TripContext);
 
-export default function NovaViagem({ onSalvar, onVoltar }: Props) {
-  const [destino, setDestino] = useState('');
-  const [data, setData] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [localizacao, setLocalizacao] = useState('');
-  const [avaliacao, setAvaliacao] = useState(5);
+  const [destination, setDestination] = useState('');
+  const [date, setDate] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [rating, setRating] = useState(5);
 
   const handleSalvar = () => {
-    if (!destino.trim() || !data.trim()) {
+    if (!destination.trim() || !date.trim()) {
       Alert.alert(
         'Atenção',
         'Preencha pelo menos o destino e a data da viagem.'
@@ -24,15 +21,17 @@ export default function NovaViagem({ onSalvar, onVoltar }: Props) {
       return;
     }
 
-    onSalvar({
+    addTrip({
       id: Date.now().toString(),
-      destino: destino.trim(),
-      data: data.trim(),
-      descricao: descricao.trim(),
-      localizacao: localizacao.trim(),
-      foto: '',
-      avaliacao,
+      destination: destination.trim(),
+      date: date.trim(),
+      description: description.trim(),
+      location: location.trim(),
+      photo: '',
+      rating,
     });
+
+    navigation.goBack();
   };
 
   return (
@@ -46,7 +45,10 @@ export default function NovaViagem({ onSalvar, onVoltar }: Props) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <TouchableOpacity onPress={onVoltar} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <Text style={styles.backText}>← Voltar</Text>
             </TouchableOpacity>
 
@@ -62,16 +64,16 @@ export default function NovaViagem({ onSalvar, onVoltar }: Props) {
             <TextInput
               style={styles.input}
               placeholder="Ex.: Paris"
-              value={destino}
-              onChangeText={setDestino}
+              value={destination}
+              onChangeText={setDestination}
             />
 
             <Text style={styles.label}>Data</Text>
             <TextInput
               style={styles.input}
               placeholder="Ex.: 12/07/2026"
-              value={data}
-              onChangeText={setData}
+              value={date}
+              onChangeText={setDate}
             />
 
             <Text style={styles.label}>Descrição</Text>
@@ -79,16 +81,16 @@ export default function NovaViagem({ onSalvar, onVoltar }: Props) {
               style={[styles.input, styles.textArea]}
               placeholder="Descreva sua experiência..."
               multiline
-              value={descricao}
-              onChangeText={setDescricao}
+              value={description}
+              onChangeText={setDescription}
             />
 
             <Text style={styles.label}>Localização</Text>
             <TextInput
               style={styles.input}
               placeholder="Ex.: Centro histórico"
-              value={localizacao}
-              onChangeText={setLocalizacao}
+              value={location}
+              onChangeText={setLocation}
             />
 
             <Text style={styles.label}>Avaliação</Text>
@@ -97,10 +99,10 @@ export default function NovaViagem({ onSalvar, onVoltar }: Props) {
               {[1, 2, 3, 4, 5].map((item) => (
                 <TouchableOpacity
                   key={item}
-                  onPress={() => setAvaliacao(item)}
+                  onPress={() => setRating(item)}
                 >
                   <MaterialCommunityIcons
-                    name={item <= avaliacao ? 'heart' : 'heart-outline'}
+                    name={item <= rating ? 'heart' : 'heart-outline'}
                     size={32}
                     color="#ff6d75"
                     style={styles.heart}

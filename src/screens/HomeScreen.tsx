@@ -1,51 +1,16 @@
-﻿import React, { useEffect, useState } from 'react';
-import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import NovaViagem from './NovaViagem';
-import type { Viagem } from '../types/Viagem';
+﻿import React, { useContext, useEffect, useState } from 'react';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,} from 'react-native';
+import { TripContext } from '../context/TripContext';
 
-const STORAGE_KEY = '@travelMemories:viagens';
-
-export default function Home() {
-  const [viagens, setViagens] = useState<Viagem[]>([]);
-  const [mostrarCadastro, setMostrarCadastro] = useState(false);
-
-  useEffect(() => {
-    const carregarViagens = async () => {
-      try {
-        const dados = await AsyncStorage.getItem(STORAGE_KEY);
-        if (dados) {
-          setViagens(JSON.parse(dados));
-        }
-      } catch (error) {
-        console.log('Erro ao carregar viagens', error);
-      }
-    };
-
-    carregarViagens();
-  }, []);
-
-  const salvarViagem = async (viagem: Viagem) => {
-    const novasViagens = [viagem, ...viagens];
-    setViagens(novasViagens);
-    setMostrarCadastro(false);
-
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(novasViagens));
-      Alert.alert('Sucesso', 'Viagem cadastrada com sucesso!');
-    } catch (error) {
-      console.log('Erro ao salvar viagem', error);
-      Alert.alert('Erro', 'Não foi possível salvar a viagem.');
-    }
-  };
-
-  if (mostrarCadastro) {
-    return <NovaViagem onSalvar={salvarViagem} onVoltar={() => setMostrarCadastro(false)} />;
-  }
+export default function HomeScreen({ navigation }: any) {
+  const { trips } = useContext(TripContext);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Travel Memories</Text>
 
@@ -67,31 +32,67 @@ export default function Home() {
           />
         </View>
 
-        {viagens.length === 0 ? (
+        {trips.length === 0 ? (
           <View style={styles.centerContent}>
-            <Text style={styles.welcomeText}>Sua Jornada de{'\n'}Memórias Começa Aqui.</Text>
+            <Text style={styles.welcomeText}>
+              Sua Jornada de{'\n'}Memórias Começa Aqui.
+            </Text>
 
-            <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => setMostrarCadastro(true)}>
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('NewTrip')}
+            >
               <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
 
-            <Text style={styles.helperText}>Explore suas memórias ou{'\n'}comece uma nova aventura.</Text>
+            <Text style={styles.helperText}>
+              Explore suas memórias ou{'\n'}comece uma nova aventura.
+            </Text>
           </View>
         ) : (
           <View style={styles.listContent}>
             <Text style={styles.sectionTitle}>Minhas viagens</Text>
-            {viagens.map((viagem) => (
-              <View key={viagem.id} style={styles.tripCard}>
-                <Text style={styles.tripTitle}>{viagem.destino}</Text>
-                <Text style={styles.tripMeta}>{viagem.data}</Text>
-                {viagem.descricao ? <Text style={styles.tripDescription}>{viagem.descricao}</Text> : null}
-                {viagem.localizacao ? <Text style={styles.tripLocation}>📍 {viagem.localizacao}</Text> : null}
-                <Text style={styles.tripRating}>{'♥'.repeat(viagem.avaliacao)}</Text>
-              </View>
+
+            {trips.map((trip) => (
+              <TouchableOpacity
+                key={trip.id}
+                style={styles.tripCard}
+                onPress={() =>
+                  navigation.navigate('TripDetails', {
+                    item: trip,
+                  })
+                }
+              >
+                <Text style={styles.tripTitle}>{trip.destination}</Text>
+
+                <Text style={styles.tripMeta}>{trip.date}</Text>
+
+                {trip.description ? (
+                  <Text style={styles.tripDescription}>
+                    {trip.description}
+                  </Text>
+                ) : null}
+
+                {trip.location ? (
+                  <Text style={styles.tripLocation}>
+                    📍 {trip.location}
+                  </Text>
+                ) : null}
+
+                <Text style={styles.tripRating}>
+                  {'❤️'.repeat(trip.rating)}
+                </Text>
+              </TouchableOpacity>
             ))}
 
-            <TouchableOpacity style={styles.addButtonSmall} onPress={() => setMostrarCadastro(true)}>
-              <Text style={styles.addButtonTextSmall}>+ Nova viagem</Text>
+            <TouchableOpacity
+              style={styles.addButtonSmall}
+              onPress={() => navigation.navigate('NewTrip')}
+            >
+              <Text style={styles.addButtonTextSmall}>
+                + Nova viagem
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -100,16 +101,21 @@ export default function Home() {
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem}>
           <Text style={[styles.tabIcon, styles.tabIconActive]}>📖</Text>
-          <Text style={[styles.tabText, styles.tabTextActive]}>Início</Text>
+          <Text style={[styles.tabText, styles.tabTextActive]}>
+            Início
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem}>
           <Text style={styles.tabIcon}>🌐</Text>
           <Text style={styles.tabText}>Explorar</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem}>
           <Text style={styles.tabIcon}>🗺️</Text>
           <Text style={styles.tabText}>Mapa</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem}>
           <Text style={styles.tabIcon}>👤</Text>
           <Text style={styles.tabText}>Perfil</Text>
@@ -118,6 +124,7 @@ export default function Home() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
