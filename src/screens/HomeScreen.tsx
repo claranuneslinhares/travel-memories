@@ -1,9 +1,17 @@
-﻿import React, { useContext, useEffect, useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,} from 'react-native';
+﻿import React, { useContext, useState } from 'react';
+import {Image, SafeAreaView, ScrollView,StyleSheet,Text,TextInput,TouchableOpacity,View,} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TripContext } from '../context/TripContext';
 
 export default function HomeScreen({ navigation }: any) {
   const { trips } = useContext(TripContext);
+  const [search, setSearch] = useState('');
+
+const insets = useSafeAreaInsets();
+
+const filteredTrips = trips.filter((trip) =>
+  trip.destination.toLowerCase().includes(search.toLowerCase())
+);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,14 +32,15 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            placeholder="Pesquisar destino..."
-            placeholderTextColor="#999"
-            style={styles.searchInput}
-          />
-        </View>
-
+       <View style={styles.searchContainer}>
+         <TextInput
+           placeholder="Pesquisar destino..."
+           placeholderTextColor="#999"
+           style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+            />
+          </View>
         {trips.length === 0 ? (
           <View style={styles.centerContent}>
             <Text style={styles.welcomeText}>
@@ -47,14 +56,25 @@ export default function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
 
             <Text style={styles.helperText}>
-              Explore suas memórias ou{'\n'}comece uma nova aventura.
+              Reviva suas memórias ou registre uma nova viagem.
             </Text>
           </View>
         ) : (
           <View style={styles.listContent}>
             <Text style={styles.sectionTitle}>Minhas viagens</Text>
 
-            {trips.map((trip) => (
+
+           {filteredTrips.length === 0 && (
+            <Text
+              style={{
+              textAlign: 'center',
+              color: '#777',
+              marginTop: 20,
+              }}
+            > Nenhuma viagem encontrada </Text>
+            )}
+
+           {filteredTrips.map((trip) => (
               <TouchableOpacity
                 key={trip.id}
                 style={styles.tripCard}
@@ -68,9 +88,9 @@ export default function HomeScreen({ navigation }: any) {
 
                 <Text style={styles.tripMeta}>{trip.date}</Text>
 
-                {trip.description ? (
+                {trip.diary ? (
                   <Text style={styles.tripDescription}>
-                    {trip.description}
+                    {trip.diary}
                   </Text>
                 ) : null}
 
@@ -98,7 +118,13 @@ export default function HomeScreen({ navigation }: any) {
         )}
       </ScrollView>
 
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar,
+    {
+      paddingBottom: insets.bottom,
+      height: 60 + insets.bottom,
+    },
+      ]}
+    >
         <TouchableOpacity style={styles.tabItem}>
           <Text style={[styles.tabIcon, styles.tabIconActive]}>📖</Text>
           <Text style={[styles.tabText, styles.tabTextActive]}>
@@ -111,10 +137,12 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={styles.tabText}>Explorar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.tabItem}>
-          <Text style={styles.tabIcon}>🗺️</Text>
-          <Text style={styles.tabText}>Mapa</Text>
-        </TouchableOpacity>
+       <TouchableOpacity style={styles.tabItem}
+        onPress={() => navigation.navigate('Map')}
+        >
+        <Text style={styles.tabIcon}>🗺️</Text>
+        <Text style={styles.tabText}>Mapa</Text>
+      </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem}>
           <Text style={styles.tabIcon}>👤</Text>
@@ -133,7 +161,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24,
+    paddingBottom: 100,
   },
   header: {
     marginTop: 20,

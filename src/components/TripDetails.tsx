@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Trip } from '../types/Trip';
+import { Alert } from 'react-native';
+import { TripContext } from '../context/TripContext';
 
-type Props = {
-  trip: Trip;
-  onBack: () => void;
-};
+type Props={
+    trip:Trip;
+    navigation:any;
+}
+export default function TripDetails({trip,navigation}:Props) {
 
-export default function TripDetails({ trip, onBack }: Props) {
+  const { removeTrip } = useContext(TripContext);
+
+  function excluirViagem() {
+    Alert.alert(
+      "Excluir viagem",
+      "Deseja realmente excluir esta memória?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => {
+            removeTrip(trip.id);
+            navigation.goBack();
+          }
+        }
+      ]
+    );
+  }
+
+  function editarViagem() {
+    navigation.navigate("NewTrip", {
+      trip
+    });
+  }
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -20,7 +50,7 @@ export default function TripDetails({ trip, onBack }: Props) {
             style={styles.image}
           />
 
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <MaterialCommunityIcons name="arrow-left" size={26} color="#FFF" />
           </TouchableOpacity>
 
@@ -34,9 +64,9 @@ export default function TripDetails({ trip, onBack }: Props) {
 
         <View style={styles.content}>
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Descrição</Text>
+            <Text style={styles.sectionTitle}>Diário</Text>
             <Text style={styles.description}>
-              {trip.description || 'Nenhuma descrição cadastrada.'}
+              {trip.diary || 'Nenhuma descrição cadastrada.'}
             </Text>
           </View>
 
@@ -63,9 +93,15 @@ export default function TripDetails({ trip, onBack }: Props) {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.editButton}>
+          <TouchableOpacity style={styles.editButton} onPress={() =>
+            navigation.navigate("EditTrip",{item:trip})}>
             <MaterialCommunityIcons name="pencil" size={20} color="#FFF" />
             <Text style={styles.editText}>Editar viagem</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.deleteButton} onPress={excluirViagem}>
+            <MaterialCommunityIcons name="delete" size={20} color="#FFF"/>
+            <Text style={styles.deleteText}>Excluir viagem</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -172,4 +208,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: 8,
   },
+  deleteButton: {
+  backgroundColor: '#D9534F',
+  height: 55,
+  borderRadius: 15,
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'row',
+  marginBottom: 30,
+},
+deleteText: {
+  color: '#FFF',
+  fontSize: 16,
+  fontWeight: '700',
+  marginLeft: 8,
+},
 });

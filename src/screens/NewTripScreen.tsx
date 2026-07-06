@@ -1,5 +1,7 @@
 import React, { useContext, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, } from 'react-native';
+import {Alert, Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text,TextInput,TouchableOpacity,View,} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TripContext } from '../context/TripContext';
 
@@ -8,15 +10,61 @@ export default function NewTripScreen({ navigation }: any) {
 
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
-  const [description, setDescription] = useState('');
+  const [diary, setDiary] = useState('');
   const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState<number | undefined>();
+  const [longitude, setLongitude] = useState<number | undefined>();
+  const [photo, setPhoto] = useState('');
   const [rating, setRating] = useState(5);
 
-  const handleSalvar = () => {
+  async function tirarFoto() {
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        'Permissão necessária',
+        'Permita o uso da câmera.'
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
+  }
+
+  async function pegarLocalizacao() {
+    const { status } =
+      await Location.requestForegroundPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permissão negada',
+        'Não foi possível acessar sua localização.'
+      );
+      return;
+    }
+
+    const local = await Location.getCurrentPositionAsync({});
+
+    setLatitude(local.coords.latitude);
+    setLongitude(local.coords.longitude);
+
+    setLocation(
+      `${local.coords.latitude.toFixed(5)}, ${local.coords.longitude.toFixed(5)}`
+    );
+  }
+
+  function handleSalvar() {
     if (!destination.trim() || !date.trim()) {
       Alert.alert(
         'Atenção',
-        'Preencha pelo menos o destino e a data da viagem.'
+        'Preencha o destino e a data.'
       );
       return;
     }
@@ -25,14 +73,16 @@ export default function NewTripScreen({ navigation }: any) {
       id: Date.now().toString(),
       destination: destination.trim(),
       date: date.trim(),
-      description: description.trim(),
-      location: location.trim(),
-      photo: '',
+      diary: diary.trim(),
+      location,
+      latitude,
+      longitude,
+      photo,
       rating,
     });
 
     navigation.goBack();
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,7 +106,7 @@ export default function NewTripScreen({ navigation }: any) {
           </View>
 
           <Text style={styles.subtitle}>
-            Registre os detalhes da sua próxima aventura.
+           Escreva como foi sua viagem e registre essa memória para sempre.
           </Text>
 
           <View style={styles.formCard}>
@@ -76,23 +126,57 @@ export default function NewTripScreen({ navigation }: any) {
               onChangeText={setDate}
             />
 
-            <Text style={styles.label}>Descrição</Text>
+            <Text style={styles.label}>Diário</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Descreva sua experiência..."
               multiline
-              value={description}
-              onChangeText={setDescription}
+              value={diary}
+              onChangeText={setDiary}
             />
 
-            <Text style={styles.label}>Localização</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex.: Centro histórico"
-              value={location}
-              onChangeText={setLocation}
-            />
+           <TouchableOpacity
+              style={styles.saveButton}
+              onPress={pegarLocalizacao}
+            >
+            <Text style={styles.saveButtonText}>
+            📍 Obter localização
+            </Text>
+            </TouchableOpacity>
+            <Text style={styles.label}>Foto da viagem</Text>
+            {location !== '' && (
+            <Text
+              style={{
+              marginTop: 10,
+              color: '#1E4E4A',
+              fontWeight: '600',
+              }}
+              >
+              📍 {location}
+            </Text>
+        )}
 
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={tirarFoto}
+            >
+              <Text style={styles.saveButtonText}>
+                📷 Tirar foto
+              </Text>
+            </TouchableOpacity>
+
+            {photo !== '' && (
+              <Image
+                source={{ uri: photo }}
+                style={{
+                  width: '100%',
+                  height: 220,
+                  borderRadius: 12,
+                  marginTop: 12,
+                  marginBottom: 12,
+                }}
+              />
+            )}
             <Text style={styles.label}>Avaliação</Text>
 
             <View style={styles.ratingContainer}>
@@ -116,7 +200,7 @@ export default function NewTripScreen({ navigation }: any) {
               onPress={handleSalvar}
               activeOpacity={0.9}
             >
-              <Text style={styles.saveButtonText}>Salvar viagem</Text>
+              <Text style={styles.saveButtonText}>Salvar memória</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

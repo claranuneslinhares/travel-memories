@@ -25,20 +25,29 @@ export function TripProvider({ children }: Props) {
   }, []);
 
   async function loadTrips() {
+  try {
     const data = await AsyncStorage.getItem(STORAGE_KEY);
 
     if (data) {
       setTrips(JSON.parse(data));
     }
+  } catch (error) {
+    console.log("Erro ao carregar viagens.");
   }
+}
 
-  async function saveTrips(newTrips: Trip[]) {
+async function saveTrips(newTrips: Trip[]) {
+  try {
     setTrips(newTrips);
+
     await AsyncStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(newTrips)
     );
+  } catch (error) {
+    console.log("Erro ao salvar viagens.");
   }
+}
 
   function addTrip(trip: Trip) {
     const newTrips = [trip, ...trips];

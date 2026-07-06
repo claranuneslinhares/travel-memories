@@ -4,6 +4,8 @@ import React from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import NewTripScreen from '../screens/NewTripScreen';
 import TripDetailsScreen from '../screens/TripDetailsScreen';
+import EditTripScreen from '../screens/EditTripScreen';
+import MapScreen from '../screens/MapScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +19,14 @@ export default function AppNavigator() {
           name="TripDetails"
           component={TripDetailsScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EditTrip"
+          component={EditTripScreen}
+        />
+        <Stack.Screen
+          name="Map"
+          component={MapScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
