@@ -15,15 +15,9 @@ export default function AppNavigator() {
       <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="NewTrip" component={NewTripScreen} />
-        <Stack.Screen
-          name="TripDetails"
-          component={TripDetailsScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="EditTrip"
-          component={EditTripScreen}
-        />
+        <Stack.Screen name="TripDetails"component={TripDetailsScreen}
+          options={{ headerShown: false }}/>
+        <Stack.Screen name="EditTrip" component={EditTripScreen}/>
         <Stack.Screen
           name="Map"
           component={MapScreen}

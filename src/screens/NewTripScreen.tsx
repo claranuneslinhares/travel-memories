@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import {Alert, Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text,TextInput,TouchableOpacity,View,} from 'react-native';
+import {Alert,Image,KeyboardAvoidingView,Platform,SafeAreaView,ScrollView,StyleSheet,Text,TextInput, TouchableOpacity, View,} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,14 +18,10 @@ export default function NewTripScreen({ navigation }: any) {
   const [rating, setRating] = useState(5);
 
   async function tirarFoto() {
-    const permission =
-      await ImagePicker.requestCameraPermissionsAsync();
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert(
-        'Permissão necessária',
-        'Permita o uso da câmera.'
-      );
+      Alert.alert('Permissão necessária', 'Permita o uso da câmera.');
       return;
     }
 
@@ -39,14 +35,10 @@ export default function NewTripScreen({ navigation }: any) {
   }
 
   async function pegarLocalizacao() {
-    const { status } =
-      await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert(
-        'Permissão negada',
-        'Não foi possível acessar sua localização.'
-      );
+      Alert.alert('Permissão negada', 'Não foi possível acessar sua localização.');
       return;
     }
 
@@ -60,12 +52,28 @@ export default function NewTripScreen({ navigation }: any) {
     );
   }
 
+  async function buscarLocalDaViagem() {
+    if (!location.trim()) {
+      Alert.alert('Atenção', 'Digite o local da viagem.');
+      return;
+    }
+
+    const resultado = await Location.geocodeAsync(location);
+
+    if (resultado.length === 0) {
+      Alert.alert('Erro', 'Local não encontrado.');
+      return;
+    }
+
+    setLatitude(resultado[0].latitude);
+    setLongitude(resultado[0].longitude);
+
+    Alert.alert('Sucesso', 'Local encontrado!');
+  }
+
   function handleSalvar() {
     if (!destination.trim() || !date.trim()) {
-      Alert.alert(
-        'Atenção',
-        'Preencha o destino e a data.'
-      );
+      Alert.alert('Atenção', 'Preencha o destino e a data.');
       return;
     }
 
@@ -106,11 +114,11 @@ export default function NewTripScreen({ navigation }: any) {
           </View>
 
           <Text style={styles.subtitle}>
-           Escreva como foi sua viagem e registre essa memória para sempre.
+            Escreva como foi sua viagem e registre essa memória para sempre.
           </Text>
 
           <View style={styles.formCard}>
-            <Text style={styles.label}>Destino</Text>
+            <Text style={styles.label}>Viagem</Text>
             <TextInput
               style={styles.input}
               placeholder="Ex.: Paris"
@@ -135,34 +143,60 @@ export default function NewTripScreen({ navigation }: any) {
               onChangeText={setDiary}
             />
 
-           <TouchableOpacity
+            <Text style={styles.label}>Local da viagem</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Ex.: Paris, Gramado, Rio de Janeiro..."
+              value={location}
+              onChangeText={setLocation}
+            />
+
+            <TouchableOpacity
               style={styles.saveButton}
               onPress={pegarLocalizacao}
             >
-            <Text style={styles.saveButtonText}>
-            📍 Obter localização
-            </Text>
+              <Text style={styles.saveButtonText}>📍 Usar minha localização</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={buscarLocalDaViagem}
+            >
+              <Text style={styles.saveButtonText}>🌍 Buscar local da viagem</Text>
+            </TouchableOpacity>
+
+            {latitude && longitude && (
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginTop: 10,
+                  color: '#1E4E4A',
+                  fontWeight: '600',
+                }}
+              >
+                Localização registrada ✔
+              </Text>
+            )}
+
             <Text style={styles.label}>Foto da viagem</Text>
             {location !== '' && (
-            <Text
-              style={{
-              marginTop: 10,
-              color: '#1E4E4A',
-              fontWeight: '600',
-              }}
+              <Text
+                style={{
+                  marginTop: 10,
+                  color: '#1E4E4A',
+                  fontWeight: '600',
+                }}
               >
-              📍 {location}
-            </Text>
-        )}
+                📍 {location}
+              </Text>
+            )}
 
             <TouchableOpacity
               style={styles.saveButton}
               onPress={tirarFoto}
             >
-              <Text style={styles.saveButtonText}>
-                📷 Tirar foto
-              </Text>
+              <Text style={styles.saveButtonText}>📷 Tirar foto</Text>
             </TouchableOpacity>
 
             {photo !== '' && (

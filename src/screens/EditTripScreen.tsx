@@ -52,7 +52,7 @@ export default function EditTripScreen({ navigation, route }: any) {
           Editar viagem
         </Text>
 
-        <Text style={styles.label}>Destino</Text>
+        <Text style={styles.label}>Viagem</Text>
 
         <TextInput
           style={styles.input}
