@@ -38,7 +38,7 @@ Desenvolver um aplicativo para registrar viagens, permitindo que o usuário arma
 1. Clone o repositório.
 
 ```bash
-git clone <url-do-repositorio>
+git clone (https://github.com/claranuneslinhares/travel-memories.git)
 ```
 
 2. Instale as dependências.
