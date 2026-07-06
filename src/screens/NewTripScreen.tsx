@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TripContext } from '../context/TripContext';
+import type { Trip } from '../types/Trip';
 
 export default function NewTripScreen({ navigation }: any) {
   const { addTrip } = useContext(TripContext);
@@ -77,17 +78,20 @@ export default function NewTripScreen({ navigation }: any) {
       return;
     }
 
-    addTrip({
+    const tripToSave: Trip = {
       id: Date.now().toString(),
       destination: destination.trim(),
       date: date.trim(),
+      description: diary.trim(),
       diary: diary.trim(),
-      location,
+      location: location.trim(),
       latitude,
       longitude,
       photo,
       rating,
-    });
+    };
+
+    addTrip(tripToSave);
 
     navigation.goBack();
   }
@@ -103,13 +107,6 @@ export default function NewTripScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Text style={styles.backText}>← Voltar</Text>
-            </TouchableOpacity>
-
             <Text style={styles.title}>Nova viagem</Text>
           </View>
 
@@ -152,65 +149,32 @@ export default function NewTripScreen({ navigation }: any) {
               onChangeText={setLocation}
             />
 
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={pegarLocalizacao}
-            >
-              <Text style={styles.saveButtonText}>📍 Usar minha localização</Text>
-            </TouchableOpacity>
+            <View style={styles.resourceCard}>
+              <Text style={styles.resourceTitle}>Recursos da viagem</Text>
 
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={buscarLocalDaViagem}
-            >
-              <Text style={styles.saveButtonText}>🌍 Buscar local da viagem</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.resourceButton} onPress={tirarFoto}>
+                <MaterialCommunityIcons name="camera-outline" size={24} color="#1E4E4A" />
+                <Text style={styles.resourceText}>Capturar foto</Text>
+              </TouchableOpacity>
 
-            {latitude && longitude && (
-              <Text
-                style={{
-                  textAlign: 'center',
-                  marginTop: 10,
-                  color: '#1E4E4A',
-                  fontWeight: '600',
-                }}
-              >
-                Localização registrada ✔
-              </Text>
-            )}
+              <TouchableOpacity style={styles.resourceButton} onPress={pegarLocalizacao}>
+                <MaterialCommunityIcons name="crosshairs-gps" size={24} color="#1E4E4A" />
+                <Text style={styles.resourceText}>Obter localização</Text>
+              </TouchableOpacity>
 
-            <Text style={styles.label}>Foto da viagem</Text>
-            {location !== '' && (
-              <Text
-                style={{
-                  marginTop: 10,
-                  color: '#1E4E4A',
-                  fontWeight: '600',
-                }}
-              >
-                📍 {location}
-              </Text>
-            )}
+              <TouchableOpacity style={styles.resourceButton} onPress={buscarLocalDaViagem}>
+                <MaterialCommunityIcons name="map-marker-radius-outline" size={24} color="#1E4E4A" />
+                <Text style={styles.resourceText}>Buscar local</Text>
+              </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={tirarFoto}
-            >
-              <Text style={styles.saveButtonText}>📷 Tirar foto</Text>
-            </TouchableOpacity>
+            {latitude && longitude ? (
+              <Text style={styles.locationSuccess}>Localização registrada ✔</Text>
+            ) : null}
 
-            {photo !== '' && (
-              <Image
-                source={{ uri: photo }}
-                style={{
-                  width: '100%',
-                  height: 220,
-                  borderRadius: 12,
-                  marginTop: 12,
-                  marginBottom: 12,
-                }}
-              />
-            )}
+            {location ? <Text style={styles.locationText}>📍 {location}</Text> : null}
+
+            {photo ? <Image source={{ uri: photo }} style={styles.photo} /> : null}
             <Text style={styles.label}>Avaliação</Text>
 
             <View style={styles.ratingContainer}>
@@ -347,5 +311,62 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+
+  resourceCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 18,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+
+  resourceTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 14,
+  },
+
+  resourceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+  },
+
+  resourceText: {
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#374151',
+  },
+
+  locationSuccess: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: '#1E4E4A',
+    fontWeight: '600',
+  },
+
+  locationText: {
+    marginTop: 10,
+    color: '#1E4E4A',
+    fontWeight: '600',
+  },
+
+  photo: {
+    width: '100%',
+    height: 220,
+    borderRadius: 12,
+    marginTop: 12,
+    marginBottom: 12,
   },
 });
