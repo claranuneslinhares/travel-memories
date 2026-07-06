@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import {Alert,SafeAreaView, ScrollView, StyleSheet, Text, TextInput,TouchableOpacity,View,} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TripContext } from '../context/TripContext';
+import * as Location from 'expo-location';
 
 export default function EditTripScreen({ navigation, route }: any) {
 
@@ -15,31 +16,56 @@ export default function EditTripScreen({ navigation, route }: any) {
   const [location, setLocation] = useState(trip.location);
   const [rating, setRating] = useState(trip.rating);
 
-  function salvar() {
-
-    if(destination.trim()==='' || date.trim()===''){
-      Alert.alert("Preencha destino e data.");
+  async function buscarLocalizacao() {
+    if (!location.trim()) {
+      Alert.alert('Digite um local.');
       return;
     }
+  
+    try {
+      const resultado = await Location.geocodeAsync(location);
+  
+      if (resultado.length === 0) {
+        Alert.alert('Local não encontrado.');
+        return;
+      }
+  
+      salvar(
+        resultado[0].latitude,
+        resultado[0].longitude
+      );
+  
+    } catch {
+      Alert.alert('Erro ao buscar localização.');
+    }
+  }
+  function salvar(latitude?: number, longitude?: number) {
 
-    updateTrip({
-      ...trip,
-      destination,
-      date,
-      diary,
-      location,
-      rating,
-    });
-
-    navigation.goBack();
+  if (destination.trim() === '' || date.trim() === '') {
+    Alert.alert("Preencha destino e data.");
+    return;
   }
 
+  updateTrip({
+    ...trip,
+    destination,
+    date,
+    diary,
+    location,
+    latitude: latitude ?? trip.latitude,
+    longitude: longitude ?? trip.longitude,
+    rating,
+  });
+
+  navigation.goBack();
+}
   return (
     <SafeAreaView style={styles.container}>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+    <ScrollView
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
       >
 
         <TouchableOpacity
@@ -113,8 +139,8 @@ export default function EditTripScreen({ navigation, route }: any) {
         </View>
 
         <TouchableOpacity
-          style={styles.saveButton}
-          onPress={salvar}
+         style={styles.saveButton}
+          onPress={buscarLocalizacao}
         >
 
           <Text style={styles.saveButtonText}>
@@ -141,7 +167,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
 
   header: {
