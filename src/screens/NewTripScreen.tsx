@@ -54,11 +54,22 @@ export default function NewTripScreen({ navigation }: any) {
   }
 
   async function buscarLocalDaViagem() {
-    if (!location.trim()) {
-      Alert.alert('Atenção', 'Digite o local da viagem.');
-      return;
-    }
+  const { status } = await Location.requestForegroundPermissionsAsync();
 
+  if (status !== 'granted') {
+    Alert.alert(
+      'Permissão negada',
+      'Permita o acesso à localização.'
+    );
+    return;
+  }
+
+  if (!location.trim()) {
+    Alert.alert('Atenção', 'Digite o local da viagem.');
+    return;
+  }
+
+  try {
     const resultado = await Location.geocodeAsync(location);
 
     if (resultado.length === 0) {
@@ -70,8 +81,11 @@ export default function NewTripScreen({ navigation }: any) {
     setLongitude(resultado[0].longitude);
 
     Alert.alert('Sucesso', 'Local encontrado!');
+  } catch (error) {
+    console.log(error);
+    Alert.alert('Erro', 'Não foi possível localizar esse lugar.');
   }
-
+}
   function handleSalvar() {
     if (!destination.trim() || !date.trim()) {
       Alert.alert('Atenção', 'Preencha o destino e a data.');
@@ -90,7 +104,6 @@ export default function NewTripScreen({ navigation }: any) {
       photo,
       rating,
     };
-
     addTrip(tripToSave);
 
     navigation.goBack();

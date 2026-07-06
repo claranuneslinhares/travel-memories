@@ -27,8 +27,14 @@ export default function MapScreen({ route }: any) {
         ) : null}
 
         {trips.map((trip) => {
-          if (!trip.latitude || !trip.longitude) return null;
-
+          if (
+            trip.latitude === undefined ||
+            trip.longitude === undefined
+          ) {
+            return null;
+            
+          }
+          
           return (
             <Marker
               key={trip.id}
