@@ -27,10 +27,11 @@ export default function NewTripScreen({ navigation }: any) {
     }
 
     const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
       quality: 0.7,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets.length > 0) {
       setPhoto(result.assets[0].uri);
     }
   }
